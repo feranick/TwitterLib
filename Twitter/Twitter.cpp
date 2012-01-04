@@ -1,16 +1,14 @@
 /*
   Twitter.cpp - Arduino library to Post messages to Twitter using OAuth.
-  Copyright (c) NeoCat 2010. All right reserved.
- 
-  Mofidied by feranick <feranick@hotmail.com> to add compatibility with Arduino IDE v.1.0
+  Copyright (c) NeoCat 2010-2011. All right reserved.
   
   This library is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
  */
 
-// ver1.2 - Use <Udp.h> to support IDE 0019 or later
-// ver1.2.2_nf1 - Added support for Arduino IDE v.1.0
+// ver1.2 - Use <string.h>
+// ver1.3 - Support IDE 1.0
 
 #include <string.h>
 #include "Twitter.h"
@@ -19,36 +17,30 @@
 
 #if defined(ARDUINO) && ARDUINO < 100
 static uint8_t server[] = {0,0,0,0}; // IP address of LIB_DOMAIN
-#else
-static uint8_t *server; //IP address of LIB_DOMAIN
-#endif
-
-#if defined(ARDUINO) && ARDUINO < 100
 Twitter::Twitter(const char *token) : client(server, 80), token(token)
 {
 }
 #else
-Twitter::Twitter(const char *token) : client(*server), token(token)
+Twitter::Twitter(const char *token) : token(token)
 {
 }
 #endif
 
 bool Twitter::post(const char *msg)
-{   
-    #if defined(ARDUINO) && ARDUINO < 100
+{
+#if defined(ARDUINO) && ARDUINO < 100
 	DNSError err = EthernetDNS.resolveHostName(LIB_DOMAIN, server);
 	if (err != DNSSuccess) {
 		return false;
 	}
 #endif
-    
 	parseStatus = 0;
 	statusCode = 0;
-    #if defined(ARDUINO) && ARDUINO < 100
+#if defined(ARDUINO) && ARDUINO < 100
 	if (client.connect()) {
-    #else
-    if (client.connect(LIB_DOMAIN, 80)) {
-    #endif    
+#else
+	if (client.connect(LIB_DOMAIN, 80)) {
+#endif
 		client.println("POST http://" LIB_DOMAIN "/update HTTP/1.0");
 		client.print("Content-Length: ");
 		client.println(strlen(msg)+strlen(token)+14);
